@@ -953,9 +953,19 @@
             background: #e0e0e0;
         }
 
+        /* 图解教程容器 */
+        .visual-guide-container {
+            background: #faf8f5;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #f0e8df;
+        }
+        .visual-guide-container svg {
+            display: block;
+        }
+
         /* 版式图生成步骤 */
-        .layout-canvas-container {
-            text-align: center;
+        .layout-canvas-container {            text-align: center;
             margin: 20px 0;
             padding: 20px;
             background: #faf8f5;
@@ -1715,6 +1725,14 @@
                 </div>
 
                 <div class="guidance-section">
+                    <h4>🎨 图解教程</h4>
+                    <p style="color:#999;font-size:13px;margin-bottom:12px">字体大小、比例与排版要点一图看懂</p>
+                    <div class="visual-guide-container">
+                        ${generateVisualGuide(layout)}
+                    </div>
+                </div>
+
+                <div class="guidance-section">
                     <div class="tips-box">
                         <h5>💡 新手小贴士</h5>
                         <p>${layout.details.tips}</p>
@@ -1741,6 +1759,325 @@
         function closeModal() {
             document.getElementById('modalOverlay').classList.remove('active');
             document.body.style.overflow = '';
+        }
+
+        // ==================== 图解教程 ====================
+        function generateVisualGuide(layout) {
+            var guides = {
+                'grid-diary': gridDiaryGuide,
+                'timeline': timelineGuide,
+                'cornell': cornellGuide,
+                'bullet-journal': bulletGuide,
+                'weekly-spread': weeklyGuide,
+                'mood-tracker': moodGuide,
+                'gratitude': gratitudeGuide
+            };
+            var fn = guides[layout.id];
+            return fn ? fn() : defaultVisualGuide(layout);
+        }
+        function vg_ann(x1,y1,x2,y2,label,color) {
+            color = color||'#e8a87c';
+            return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+color+'" stroke-width="1" stroke-dasharray="3,2"/><circle cx="'+x1+'" cy="'+y1+'" r="2.5" fill="'+color+'"/><text x="'+(x2+4)+'" y="'+(y2+4)+'" font-size="9" fill="'+color+'" font-family="sans-serif">'+label+'</text>';
+        }
+        function vg_dimV(x,y1,y2,label,color) {
+            color=color||'#aaa'; var mx=(y1+y2)/2;
+            return '<line x1="'+x+'" y1="'+y1+'" x2="'+x+'" y2="'+y2+'" stroke="'+color+'" stroke-width="1"/><polygon points="'+(x-3)+','+(y1+6)+' '+(x+3)+','+(y1+6)+' '+x+','+y1+'" fill="'+color+'"/><polygon points="'+(x-3)+','+(y2-6)+' '+(x+3)+','+(y2-6)+' '+x+','+y2+'" fill="'+color+'"/><text x="'+(x+5)+'" y="'+(mx+4)+'" font-size="9" fill="'+color+'" font-family="sans-serif">'+label+'</text>';
+        }
+        function vg_dimH(x1,x2,y,label,color) {
+            color=color||'#aaa'; var mx=(x1+x2)/2;
+            return '<line x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke="'+color+'" stroke-width="1"/><polygon points="'+(x1+6)+','+(y-3)+' '+(x1+6)+','+(y+3)+' '+x1+','+y+'" fill="'+color+'"/><polygon points="'+(x2-6)+','+(y-3)+' '+(x2-6)+','+(y+3)+' '+x2+','+y+'" fill="'+color+'"/><text x="'+mx+'" y="'+(y-5)+'" font-size="9" fill="'+color+'" text-anchor="middle" font-family="sans-serif">'+label+'</text>';
+        }
+        function vg_bubble(cx,cy,r,label,bg,stroke) {
+            bg=bg||'#fff3e0'; stroke=stroke||'#e8a87c';
+            return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+bg+'" stroke="'+stroke+'" stroke-width="1.5"/><text x="'+cx+'" y="'+(cy+4)+'" font-size="9" fill="#5a3e28" text-anchor="middle" font-family="sans-serif">'+label+'</text>';
+        }
+        function vg_zone(x,y,w,h,fill,stroke,label,fs) {
+            fs=fs||10;
+            return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="1.2" rx="3"/><text x="'+(x+w/2)+'" y="'+(y+h/2+fs/3)+'" font-size="'+fs+'" fill="#555" text-anchor="middle" font-family="sans-serif">'+label+'</text>';
+        }
+        function vg_sidebar(tips) {
+            var lines = '';
+            for(var i=0;i<tips.length;i++) lines += '<text x="365" y="'+(193+i*15)+'" font-size="8.5" fill="#888" font-family="sans-serif">'+tips[i]+'</text>';
+            return lines;
+        }
+        function vg_sidecard(bubbles, tips) {
+            var html = '<rect x="345" y="20" width="165" height="300" fill="#fff" stroke="#e0d5c8" stroke-width="1" rx="8"/>'
+                + '<text x="428" y="42" font-size="11" fill="#e8a87c" font-weight="bold" text-anchor="middle" font-family="sans-serif">&#128208; 字体规范</text>';
+            for(var i=0;i<bubbles.length;i++){
+                var b=bubbles[i];
+                html += vg_bubble(370,65+i*35,b.r||13,b.label,b.bg,b.stroke)+'<text x="390" y="'+(69+i*35)+'" font-size="10" fill="#555" font-family="sans-serif">'+b.name+'</text>';
+            }
+            html += '<line x1="355" y1="'+(55+bubbles.length*35+10)+'" x2="500" y2="'+(55+bubbles.length*35+10)+'" stroke="#eee"/>'
+                + '<text x="365" y="'+(55+bubbles.length*35+28)+'" font-size="9" fill="#999" font-family="sans-serif">&#128161; 排版要点</text>';
+            for(var j=0;j<tips.length;j++) html += '<text x="365" y="'+(55+bubbles.length*35+45+j*15)+'" font-size="8.5" fill="#888" font-family="sans-serif">'+tips[j]+'</text>';
+            return html;
+        }
+
+        function gridDiaryGuide() {
+            return '<svg viewBox="0 0 520 340" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="30" y="20" width="280" height="300" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<rect x="30" y="20" width="280" height="42" fill="#fff8f2" stroke="#e8a87c" stroke-width="1.5" rx="4"/>'
+            +'<text x="50" y="47" font-size="16" fill="#e8a87c" font-weight="bold" font-family="sans-serif">6月12日 周四</text>'
+            +vg_ann(50,36,350,36,'标题字 14-16px 粗体','#e8a87c')
+            +'<line x1="123" y1="62" x2="123" y2="315" stroke="#e0d5c8" stroke-width="1" stroke-dasharray="4,3"/>'
+            +'<line x1="216" y1="62" x2="216" y2="315" stroke="#e0d5c8" stroke-width="1" stroke-dasharray="4,3"/>'
+            +vg_zone(35,68,83,95,'#fff8f2','#f4a6b3','待办',9)
+            +'<text x="40" y="85" font-size="9" fill="#888" font-family="sans-serif">&#10022; 备课</text>'
+            +'<text x="40" y="98" font-size="9" fill="#888" font-family="sans-serif">&#10022; 买菜</text>'
+            +'<text x="40" y="111" font-size="9" fill="#888" font-family="sans-serif">&#10022; 运动</text>'
+            +vg_ann(40,80,350,95,'正文 9-10px','#aaa')
+            +vg_zone(128,68,83,95,'#f0f9f6','#98d8c8','心情',9)
+            +'<text x="133" y="109" font-size="8" fill="#888" font-family="sans-serif">今天还不错</text>'
+            +vg_ann(133,85,350,120,'心情图标 20-24px','#98d8c8')
+            +vg_zone(221,68,83,240,'#f5f0f8','#c9b1d4','日记',9)
+            +'<text x="226" y="90" font-size="8.5" fill="#888" font-family="sans-serif">今天讲了</text>'
+            +'<text x="226" y="103" font-size="8.5" fill="#888" font-family="sans-serif">二次函数，</text>'
+            +'<text x="226" y="116" font-size="8.5" fill="#888" font-family="sans-serif">学生反响好。</text>'
+            +vg_ann(221,100,350,145,'日记正文 8-9px','#c9b1d4')
+            +'<line x1="35" y1="295" x2="305" y2="295" stroke="#eee" stroke-width="1"/>'
+            +'<text x="50" y="310" font-size="8" fill="#ccc" font-family="sans-serif">今日满足度 ★★★★☆</text>'
+            +vg_ann(50,300,350,170,'底部小字 7-8px','#ccc')
+            +vg_dimV(20,20,320,'A5 高','#ccc')
+            +vg_dimH(30,310,345,'A5 宽','#ccc')
+            +vg_sidecard([
+                {label:'16px',r:16,bg:'#fff8f0',stroke:'#e8a87c',name:'日期标题'},
+                {label:'14px',r:14,bg:'#fff0f4',stroke:'#f4a6b3',name:'小标题'},
+                {label:'10px',r:12,bg:'#f0f9f6',stroke:'#98d8c8',name:'正文内容'},
+                {label:'8px', r:10,bg:'#f5f0f8',stroke:'#c9b1d4',name:'辅助小字'}
+            ],['• 三列等宽，留白对齐','• 标题占页高 1/8','• 行距 = 字号×1.5','• 边距至少 5mm','• 贴纸放在空白处'])
+            +'</svg>';
+        }
+
+        function timelineGuide() {
+            return '<svg viewBox="0 0 520 340" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="30" y="20" width="280" height="300" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<line x1="155" y1="30" x2="155" y2="315" stroke="#e8a87c" stroke-width="2.5"/>'
+            +vg_ann(155,28,350,30,'时间轴 居中','#e8a87c')
+            +'<circle cx="155" cy="65" r="7" fill="#f4a261"/><text x="118" y="62" font-size="9" fill="#f4a261" text-anchor="end" font-family="sans-serif">08:00</text>'
+            +'<rect x="168" y="48" width="130" height="34" fill="#fff8f0" stroke="#f4a261" stroke-width="1" rx="3"/>'
+            +'<text x="175" y="63" font-size="9" fill="#555" font-family="sans-serif">上午 备课+晨跑</text>'
+            +'<text x="175" y="76" font-size="8" fill="#aaa" font-family="sans-serif">好状态开始！</text>'
+            +vg_ann(168,55,350,65,'活动卡片 宽130px','#f4a261')
+            +'<circle cx="155" cy="135" r="7" fill="#2a9d8f"/><text x="118" y="132" font-size="9" fill="#2a9d8f" text-anchor="end" font-family="sans-serif">12:00</text>'
+            +'<rect x="168" y="118" width="130" height="34" fill="#f0faf8" stroke="#2a9d8f" stroke-width="1" rx="3"/>'
+            +'<text x="175" y="133" font-size="9" fill="#555" font-family="sans-serif">中午 午餐+小憩</text>'
+            +'<text x="175" y="146" font-size="8" fill="#aaa" font-family="sans-serif">15分钟充电</text>'
+            +'<circle cx="155" cy="205" r="7" fill="#e76f51"/><text x="118" y="202" font-size="9" fill="#e76f51" text-anchor="end" font-family="sans-serif">15:00</text>'
+            +'<rect x="168" y="188" width="130" height="34" fill="#fff3f0" stroke="#e76f51" stroke-width="1" rx="3"/>'
+            +'<text x="175" y="203" font-size="9" fill="#555" font-family="sans-serif">下午 上课×2节</text>'
+            +'<text x="175" y="216" font-size="8" fill="#aaa" font-family="sans-serif">讲了导函数</text>'
+            +'<circle cx="155" cy="275" r="7" fill="#e9c46a"/><text x="118" y="272" font-size="9" fill="#e9c46a" text-anchor="end" font-family="sans-serif">20:00</text>'
+            +'<rect x="168" y="258" width="130" height="34" fill="#fffbf0" stroke="#e9c46a" stroke-width="1" rx="3"/>'
+            +'<text x="175" y="273" font-size="9" fill="#555" font-family="sans-serif">晚上 阅读+手帐</text>'
+            +'<text x="175" y="286" font-size="8" fill="#aaa" font-family="sans-serif">今天完成</text>'
+            +vg_ann(35,100,350,100,'时间 9px 右对齐','#aaa')
+            +vg_ann(168,165,350,135,'副文字 8px 灰色','#aaa')
+            +vg_sidecard([
+                {label:'12px',r:14,bg:'#fff8f0',stroke:'#f4a261',name:'时间戳'},
+                {label:'9px', r:13,bg:'#f0faf8',stroke:'#2a9d8f',name:'活动标题'},
+                {label:'8px', r:12,bg:'#fff3f0',stroke:'#e76f51',name:'备注副文字'}
+            ],['• 时间轴偏左 1/3','• 节点圆直径 14px','• 卡片高统一 34px','• 段间距 ≥ 20px','• 颜色对应时段','• 左侧时间右对齐'])
+            +'</svg>';
+        }
+
+        function cornellGuide() {
+            return '<svg viewBox="0 0 520 340" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="30" y="20" width="280" height="300" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<line x1="110" y1="20" x2="110" y2="270" stroke="#e8a87c" stroke-width="1.5"/>'
+            +'<line x1="30" y1="270" x2="310" y2="270" stroke="#e8a87c" stroke-width="1.5"/>'
+            +'<rect x="30" y="20" width="280" height="30" fill="#fff8f0" rx="4"/>'
+            +'<text x="50" y="40" font-size="12" fill="#e8a87c" font-weight="bold" font-family="sans-serif">导数与函数 · 6月12日</text>'
+            +vg_ann(50,34,350,34,'标题 12-14px 粗体','#e8a87c')
+            +'<text x="38" y="68" font-size="8" fill="#e8a87c" font-weight="bold" font-family="sans-serif">线索栏</text>'
+            +'<text x="35" y="85" font-size="8" fill="#888" font-family="sans-serif">定义域</text>'
+            +'<text x="35" y="100" font-size="8" fill="#888" font-family="sans-serif">单调性</text>'
+            +'<text x="35" y="115" font-size="8" fill="#888" font-family="sans-serif">极值</text>'
+            +'<text x="35" y="130" font-size="8" fill="#888" font-family="sans-serif">公式</text>'
+            +vg_ann(35,80,350,60,'关键词 8px','#e8a87c')
+            +vg_dimH(30,110,340,'25%','#e8a87c')
+            +'<text x="118" y="68" font-size="8" fill="#2a9d8f" font-weight="bold" font-family="sans-serif">笔记栏（主区域）</text>'
+            +'<text x="118" y="84" font-size="9" fill="#555" font-family="sans-serif">f(x)=x² 导数 f\'(x)=2x</text>'
+            +'<text x="118" y="98" font-size="9" fill="#555" font-family="sans-serif">x&gt;0 时单调递增</text>'
+            +'<text x="118" y="112" font-size="9" fill="#555" font-family="sans-serif">极小值在 x=0</text>'
+            +'<line x1="118" y1="122" x2="305" y2="122" stroke="#eee"/>'
+            +'<text x="118" y="136" font-size="9" fill="#555" font-family="sans-serif">※ 导正增、导负减</text>'
+            +vg_ann(118,90,350,90,'正文 9px 行距14px','#2a9d8f')
+            +vg_dimH(110,310,340,'75%','#2a9d8f')
+            +'<rect x="30" y="271" width="280" height="46" fill="#fff9f0" rx="2"/>'
+            +'<text x="40" y="289" font-size="8" fill="#e8a87c" font-weight="bold" font-family="sans-serif">总结：</text>'
+            +'<text x="40" y="304" font-size="8.5" fill="#666" font-family="sans-serif">导函数正负决定单调性，极值=导数为0</text>'
+            +vg_ann(40,285,350,195,'总结 8-9px 精炼','#e9c46a')
+            +vg_dimV(22,270,320,'20%','#e9c46a')
+            +vg_sidecard([
+                {label:'14px',r:14,bg:'#fff8f0',stroke:'#e8a87c',name:'顶部标题'},
+                {label:'8px', r:12,bg:'#f0fef8',stroke:'#2a9d8f',name:'线索关键词'},
+                {label:'9px', r:13,bg:'#f0fdf8',stroke:'#2a9d8f',name:'笔记正文'},
+                {label:'8-9px',r:12,bg:'#fffbf0',stroke:'#e9c46a',name:'总结内容'}
+            ],['• 左:右 = 1:3 黄金比','• 总结占底部 20%','• 先写笔记再填线索','• 用★※标重点','• 总结用自己的话'])
+            +'</svg>';
+        }
+
+        function bulletGuide() {
+            return '<svg viewBox="0 0 520 340" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="30" y="20" width="280" height="300" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<rect x="30" y="20" width="280" height="38" fill="#fff8f0" rx="4"/>'
+            +'<text x="48" y="44" font-size="15" fill="#e8a87c" font-weight="bold" font-family="sans-serif">6月12日 周四</text>'
+            +vg_ann(48,36,350,36,'日期 14-16px 粗体','#e8a87c')
+            +'<text x="40" y="76" font-size="10" fill="#999" font-family="sans-serif">符号系统示例：</text>'
+            +'<circle cx="52" cy="96" r="5" fill="#555"/>'
+            +'<text x="66" y="100" font-size="10" fill="#333" font-family="sans-serif">备课第三章</text>'
+            +vg_ann(52,92,350,92,'● 任务 实心圆','#888')
+            +'<text x="44" y="120" font-size="13" fill="#4caf50" font-family="sans-serif">x</text>'
+            +'<text x="66" y="122" font-size="10" fill="#aaa" font-family="sans-serif">批改作业（已完成）</text>'
+            +vg_ann(44,116,350,116,'x 完成 字变灰','#4caf50')
+            +'<text x="44" y="145" font-size="12" fill="#e8a87c" font-family="sans-serif">&gt;</text>'
+            +'<text x="66" y="146" font-size="10" fill="#888" font-family="sans-serif">整理题库（迁移明天）</text>'
+            +vg_ann(44,141,350,141,'&gt; 迁移到明天','#e8a87c')
+            +'<circle cx="52" cy="167" r="5" fill="none" stroke="#555" stroke-width="1.5"/>'
+            +'<text x="66" y="171" font-size="10" fill="#333" font-family="sans-serif">下午3点 教研会</text>'
+            +vg_ann(52,163,350,165,'○ 事件/约定','#aaa')
+            +'<text x="44" y="194" font-size="14" fill="#a8d8ea" font-family="sans-serif">-</text>'
+            +'<text x="66" y="194" font-size="10" fill="#555" font-family="sans-serif">学生提了个好问题</text>'
+            +vg_ann(44,190,350,190,'- 随手笔记','#a8d8ea')
+            +'<line x1="40" y1="210" x2="300" y2="210" stroke="#eee" stroke-width="1.5"/>'
+            +'<text x="40" y="230" font-size="9" fill="#e8a87c" font-family="sans-serif">今日回顾</text>'
+            +'<text x="40" y="247" font-size="9" fill="#888" font-family="sans-serif">完成率 80%，明天加油！</text>'
+            +'<text x="40" y="265" font-size="9" fill="#888" font-family="sans-serif">心情 ★★★★☆</text>'
+            +vg_ann(40,240,350,248,'反思区 9px','#c9b1d4')
+            +vg_sidecard([
+                {label:'15px',r:14,bg:'#fff8f0',stroke:'#e8a87c',name:'日期标题'},
+                {label:'10px',r:13,bg:'#f5f5f5',stroke:'#888',name:'条目正文'},
+                {label:'9px', r:12,bg:'#f0fdf8',stroke:'#4caf50',name:'反思小字'}
+            ],['• 符号全书统一','• 缩进2格区分层级','• 行距 14-16px','• 完成→划线+变灰','• 当天最多10条','• 睡前写回顾最好'])
+            +'</svg>';
+        }
+
+        function weeklyGuide() {
+            var days=['一','二','三','四','五','六','日'];
+            var colors=['#b8a9c9','#b8a9c9','#b8a9c9','#b8a9c9','#b8a9c9','#f4a6b3','#f4a6b3'];
+            var bgs=['#f9f7ff','#f9f7ff','#f9f7ff','#f9f7ff','#f9f7ff','#fff0f5','#fff0f5'];
+            var cols='';
+            for(var i=0;i<7;i++){
+                cols+='<rect x="'+(20+i*60)+'" y="56" width="58" height="304" fill="'+bgs[i]+'" stroke="#e8e0f0" stroke-width="1"/>'
+                +'<text x="'+(49+i*60)+'" y="72" font-size="10" fill="'+colors[i]+'" font-weight="bold" text-anchor="middle" font-family="sans-serif">周'+days[i]+'</text>'
+                +'<text x="'+(49+i*60)+'" y="87" font-size="8.5" fill="#aaa" text-anchor="middle" font-family="sans-serif">'+(8+i)+'日</text>'
+                +'<line x1="'+(20+i*60)+'" y1="90" x2="'+(78+i*60)+'" y2="90" stroke="#eee" stroke-width="1"/>';
+            }
+            return '<svg viewBox="0 0 520 380" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="20" y="20" width="480" height="340" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<rect x="20" y="20" width="480" height="36" fill="#fff8f0" rx="4"/>'
+            +'<text x="260" y="43" font-size="13" fill="#e8a87c" font-weight="bold" text-anchor="middle" font-family="sans-serif">2026年第24周 · 6月8日-14日</text>'
+            +vg_ann(140,32,20,60,'周标题 13px','#e8a87c')
+            +cols
+            +'<text x="30" y="108" font-size="7.5" fill="#888" font-family="sans-serif">• 写教案</text>'
+            +'<text x="30" y="121" font-size="7.5" fill="#888" font-family="sans-serif">• 上2节课</text>'
+            +'<text x="30" y="134" font-size="7.5" fill="#aaa" font-family="sans-serif">晚跑3km</text>'
+            +vg_ann(440,100,430,130,'周末换色','#f4a6b3')
+            +vg_dimV(14,56,360,'各天行高','#ccc')
+            +vg_dimH(20,80,370,'每列60px','#b8a9c9')
+            +'<rect x="350" y="185" width="148" height="175" fill="#fff9f5" stroke="#e0d5c8" stroke-width="1" rx="8"/>'
+            +'<text x="424" y="205" font-size="11" fill="#e8a87c" font-weight="bold" text-anchor="middle" font-family="sans-serif">&#128208; 字体规范</text>'
+            +vg_bubble(375,225,13,'13px','#fff8f0','#e8a87c')+'<text x="395" y="229" font-size="9.5" fill="#555" font-family="sans-serif">周标题</text>'
+            +vg_bubble(375,252,12,'10px','#f9f7ff','#b8a9c9')+'<text x="395" y="256" font-size="9.5" fill="#555" font-family="sans-serif">星期/日期</text>'
+            +vg_bubble(375,278,11,'7-8px','#f5f5f5','#aaa')+'<text x="395" y="282" font-size="9.5" fill="#555" font-family="sans-serif">每日条目</text>'
+            +'<text x="360" y="308" font-size="8" fill="#888" font-family="sans-serif">&#128161; 每列最多写5条</text>'
+            +'<text x="360" y="322" font-size="8" fill="#888" font-family="sans-serif">&#128161; 周末换色区分</text>'
+            +'<text x="360" y="336" font-size="8" fill="#888" font-family="sans-serif">&#128161; 行距13px最舒适</text>'
+            +'<text x="360" y="350" font-size="8" fill="#888" font-family="sans-serif">&#128161; 右下角做周总结</text>'
+            +'</svg>';
+        }
+
+        function moodGuide() {
+            var days=['一','二','三','四','五','六','日'];
+            var hd='';
+            for(var d=0;d<7;d++) hd+='<text x="'+(50+d*36)+'" y="96" font-size="8" fill="#aaa" text-anchor="middle" font-family="sans-serif">'+days[d]+'</text>';
+            var cp=['#ffd93d','#ff9f45','#6bc5c5','#ffd93d','#f4a6b3','#ffd93d','#6bc5c5','#b39ddb','#ffd93d','#ff9f45','#ffd93d','#6bc5c5','#ffd93d','#f4a6b3','#ffd93d','#ffd93d','#ff9f45','#6bc5c5','#ffd93d','#ffd93d','#f4a6b3','#ffd93d','#6bc5c5','#b39ddb','#ffd93d','#ff9f45','#ffd93d','#6bc5c5','#ffd93d','#f4a6b3'];
+            var cells='';
+            for(var i=0;i<30;i++){
+                var row=Math.floor(i/7),col=i%7,cx=50+col*36,cy=115+row*32;
+                cells+='<rect x="'+(cx-12)+'" y="'+(cy-12)+'" width="24" height="24" fill="'+cp[i]+'" opacity="0.6" rx="5"/>'
+                +'<text x="'+cx+'" y="'+(cy+4)+'" font-size="8" fill="#444" text-anchor="middle" font-family="sans-serif">'+(i+1)+'</text>';
+            }
+            return '<svg viewBox="0 0 520 340" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="30" y="20" width="280" height="300" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<text x="60" y="46" font-size="13" fill="#e8a87c" font-weight="bold" font-family="sans-serif">2026年6月 心情追踪</text>'
+            +vg_ann(60,40,350,40,'标题 13-15px','#e8a87c')
+            +'<circle cx="50" cy="68" r="10" fill="#ffd93d" opacity="0.85"/><text x="46" y="72" font-size="7" fill="#fff" font-family="sans-serif">开心</text>'
+            +'<circle cx="80" cy="68" r="10" fill="#ff9f45" opacity="0.85"/><text x="76" y="72" font-size="7" fill="#fff" font-family="sans-serif">兴奋</text>'
+            +'<circle cx="110" cy="68" r="10" fill="#6bc5c5" opacity="0.85"/><text x="106" y="72" font-size="7" fill="#fff" font-family="sans-serif">平静</text>'
+            +'<circle cx="140" cy="68" r="10" fill="#f4a6b3" opacity="0.85"/><text x="136" y="72" font-size="7" fill="#fff" font-family="sans-serif">低落</text>'
+            +'<circle cx="170" cy="68" r="10" fill="#b39ddb" opacity="0.85"/><text x="166" y="72" font-size="7" fill="#fff" font-family="sans-serif">焦虑</text>'
+            +vg_ann(50,56,350,65,'图例圆圈 直径20px','#e8a87c')
+            +hd+cells
+            +vg_ann(38,115,350,115,'格子 24x24px','#aaa')
+            +vg_ann(38,160,350,160,'行距 32px','#aaa')
+            +vg_sidecard([
+                {label:'14px',r:14,bg:'#fff8f0',stroke:'#e8a87c',name:'月份标题'},
+                {label:'8px', r:12,bg:'#fffde7',stroke:'#ffd93d',name:'图例标签'},
+                {label:'8px', r:12,bg:'#f5f5f5',stroke:'#aaa',  name:'日期数字'}
+            ],['• 颜色就是主角','• 每格 24-28px 方形','• 5色以内最清晰','• 月末统计各色数量','• 图例放网格上方'])
+            +'</svg>';
+        }
+
+        function gratitudeGuide() {
+            var items=[
+                {n:'1',y:80, color:'#e8c547',bg:'#fffde7',text:'今天学生听课很认真'},
+                {n:'2',y:155,color:'#f4c2c2',bg:'#fff0f0',text:'和朋友吃了顿好饭'},
+                {n:'3',y:230,color:'#a8d5ba',bg:'#f0faf4',text:'终于写完了这篇手帐'}
+            ];
+            var rows='';
+            for(var i=0;i<items.length;i++){
+                var it=items[i];
+                rows+='<rect x="38" y="'+(it.y-20)+'" width="264" height="62" fill="'+it.bg+'" stroke="'+it.color+'" stroke-width="1.5" rx="6"/>'
+                +'<text x="55" y="'+(it.y+5)+'" font-size="28" fill="'+it.color+'" font-weight="bold" font-family="sans-serif">'+it.n+'</text>'
+                +'<text x="90" y="'+(it.y+4)+'" font-size="11" fill="#555" font-family="sans-serif">'+it.text+'</text>'
+                +'<text x="90" y="'+(it.y+20)+'" font-size="9" fill="#aaa" font-family="sans-serif">因为它让我感到…</text>';
+            }
+            return '<svg viewBox="0 0 520 340" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="30" y="20" width="280" height="300" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<text x="170" y="44" font-size="13" fill="#e8a87c" font-weight="bold" text-anchor="middle" font-family="sans-serif">6月12日 感恩日记</text>'
+            +vg_ann(170,38,350,38,'日期标题 13px 居中','#e8a87c')
+            +rows
+            +vg_ann(55,72,350,72,'序号 24-28px 粗体','#e8c547')
+            +vg_ann(90,90,350,90,'主文 10-12px','#888')
+            +vg_ann(90,104,350,104,'副文 8-9px 灰','#aaa')
+            +vg_dimV(22,60,292,'3格等高','#ddd')
+            +vg_sidecard([
+                {label:'13px',r:14,bg:'#fff8f0',stroke:'#e8a87c',name:'顶部日期'},
+                {label:'28px',r:16,bg:'#fffde7',stroke:'#e8c547',name:'序号数字'},
+                {label:'11px',r:13,bg:'#fff0f0',stroke:'#f4c2c2',name:'感恩内容'},
+                {label:'9px', r:11,bg:'#f5f5f5',stroke:'#aaa',  name:'延伸思考'}
+            ],['• 三行等高整齐','• 序号用对比色','• 每格上下2行','• 底部留自己的话','• 三条三种颜色'])
+            +'</svg>';
+        }
+
+        function defaultVisualGuide(layout) {
+            var c1=(layout.details&&layout.details.colors&&layout.details.colors[0])?layout.details.colors[0].hex:'#e8a87c';
+            var c2=(layout.details&&layout.details.colors&&layout.details.colors[1])?layout.details.colors[1].hex:'#98d8c8';
+            return '<svg viewBox="0 0 520 280" style="width:100%;border-radius:10px;background:#faf8f5">'
+            +'<rect x="30" y="20" width="280" height="240" fill="#fff" stroke="#ddd" stroke-width="1.5" rx="4"/>'
+            +'<rect x="30" y="20" width="280" height="40" fill="'+c1+'22" stroke="'+c1+'" stroke-width="1.2" rx="4"/>'
+            +'<text x="170" y="45" font-size="13" fill="'+c1+'" font-weight="bold" text-anchor="middle" font-family="sans-serif">标题  ·  日期</text>'
+            +vg_ann(170,35,350,35,'标题区 13-15px 粗体',c1)
+            +'<rect x="40" y="72" width="260" height="120" fill="'+c2+'18" stroke="'+c2+'" stroke-width="1.2" rx="4"/>'
+            +'<text x="170" y="110" font-size="10" fill="#888" text-anchor="middle" font-family="sans-serif">正文内容区域</text>'
+            +'<text x="170" y="128" font-size="9" fill="#aaa" text-anchor="middle" font-family="sans-serif">行距约 1.5 倍字号</text>'
+            +vg_ann(40,100,350,100,'正文 9-10px 行距14-16px',c2)
+            +'<rect x="40" y="204" width="260" height="44" fill="#faf8f5" stroke="#eee" stroke-width="1" rx="3"/>'
+            +'<text x="170" y="231" font-size="9" fill="#bbb" text-anchor="middle" font-family="sans-serif">底部总结 / 签名 / 评分  8-9px</text>'
+            +vg_ann(40,220,350,175,'底部小字 7-9px','#ccc')
+            +'<rect x="345" y="20" width="165" height="240" fill="#fff" stroke="#e0d5c8" stroke-width="1" rx="8"/>'
+            +'<text x="428" y="42" font-size="11" fill="#e8a87c" font-weight="bold" text-anchor="middle" font-family="sans-serif">&#128208; 字体规范</text>'
+            +vg_bubble(370,66,14,'14px','#fff8f0',c1)+'<text x="390" y="70" font-size="10" fill="#555" font-family="sans-serif">标题 粗体</text>'
+            +vg_bubble(370,98,13,'10px','#f5f5f5',c2)+'<text x="390" y="102" font-size="10" fill="#555" font-family="sans-serif">正文内容</text>'
+            +vg_bubble(370,130,11,'8px','#fafafa','#ccc')+'<text x="390" y="134" font-size="10" fill="#555" font-family="sans-serif">辅助小字</text>'
+            +'<line x1="355" y1="155" x2="500" y2="155" stroke="#eee"/>'
+            +'<text x="365" y="172" font-size="9" fill="#999" font-family="sans-serif">&#128161; 排版要点</text>'
+            +'<text x="365" y="188" font-size="8.5" fill="#888" font-family="sans-serif">• 标题占高 1/6</text>'
+            +'<text x="365" y="203" font-size="8.5" fill="#888" font-family="sans-serif">• 边距留 5-8mm</text>'
+            +'<text x="365" y="218" font-size="8.5" fill="#888" font-family="sans-serif">• 颜色最多 3种</text>'
+            +'<text x="365" y="233" font-size="8.5" fill="#888" font-family="sans-serif">• 留白让版面呼吸</text>'
+            +'</svg>';
         }
 
         // 开始分步指导
